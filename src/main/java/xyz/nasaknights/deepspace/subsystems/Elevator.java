@@ -1,6 +1,7 @@
 package xyz.nasaknights.deepspace.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import xyz.nasaknights.deepspace.RobotMap;
 import xyz.nasaknights.deepspace.util.motors.Lazy_TalonSRX;
@@ -9,7 +10,9 @@ import xyz.nasaknights.deepspace.util.motors.factory.TalonSRXFactory;
 import xyz.nasaknights.deepspace.util.motors.factory.VictorSPXFactory;
 
 public class Elevator extends Subsystem {
-    private static Elevator instance;
+    private static Elevator instance = new Elevator();
+
+    private final double kMaxTalonSRXSpeed = .6;
 
     private Lazy_TalonSRX talon;
     private Lazy_VictorSPX victor;
@@ -19,13 +22,16 @@ public class Elevator extends Subsystem {
     private Elevator() {
         talon = TalonSRXFactory.createTalon(RobotMap.kElevatorTalonID);
         victor = VictorSPXFactory.createVictor(RobotMap.kElevatorVictorID);
+
+        talon.configPeakOutputForward(kMaxTalonSRXSpeed);
+        talon.configPeakOutputReverse(kMaxTalonSRXSpeed * -1);
+
+        talon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute);
+
+        talon.configOpenloopRamp(.5);
     }
 
     public static Elevator getInstance() {
-        if (instance == null) {
-            instance = new Elevator();
-        }
-
         return instance;
     }
 
@@ -43,7 +49,7 @@ public class Elevator extends Subsystem {
     }
 
     public long getEncoderHeight() {
-        return 0; //talon.getSensorCollection().getQuadraturePosition();
+        return talon.getSensorCollection().getQuadraturePosition();
     }
 
     public void setPower(double power) {
@@ -57,9 +63,9 @@ public class Elevator extends Subsystem {
     }
 
     public enum ElevatorHeight {
-        BOTTOM(0),
-        MIDDLE(10000),
-        TOP(20000);
+        BOTTOM(-1750),
+        MIDDLE(-17625),
+        TOP(-33500);
 
         private int height;
 

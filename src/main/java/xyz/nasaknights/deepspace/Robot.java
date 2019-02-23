@@ -6,17 +6,23 @@ import edu.wpi.first.wpilibj.command.Scheduler;
 import xyz.nasaknights.deepspace.commands.drive.DriveCommand;
 import xyz.nasaknights.deepspace.subsystems.Drivetrain;
 import xyz.nasaknights.deepspace.subsystems.Elevator;
+import xyz.nasaknights.deepspace.util.camera.CameraUtil;
 
 public class Robot extends TimedRobot {
     private static GameState currentState;
     private Compressor compressor;
+    private OI oi = new OI();
 
     @Override
     public void robotInit() {
         compressor = new Compressor(0);
-        compressor.start();
+        compressor.setClosedLoopControl(true);
 
         currentState = GameState.DISABLED;
+
+        oi.prepareInputs();
+
+        CameraUtil.getCamera().setResolution(640, 480);
     }
 
     @Override
@@ -55,12 +61,14 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         Scheduler.getInstance().run();
+        oi.processAxis();
+
+        System.out.println(Elevator.getInstance().getEncoderHeight());
     }
 
     @Override
     public void testInit() {
         currentState = GameState.TEST;
-        compressor.start();
     }
 
     public enum GameState {

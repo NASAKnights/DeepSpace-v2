@@ -6,17 +6,17 @@ import xyz.nasaknights.deepspace.subsystems.Elevator.ElevatorHeight;
 import xyz.nasaknights.deepspace.subsystems.Elevator.ElevatorState;
 
 public final class ElevatorCommand extends PIDCommand {
-    private static final double kP = 0;
+    private static final double kP = -.00015;
     private static final double kI = 0;
-    private static final double kD = 0;
+    private static final double kD = -.00004;
 
     public ElevatorCommand(boolean up) {
         super(kP, kI, kD);
 
         requires(Elevator.getInstance());
 
-        getPIDController().setSetpoint(up ? Elevator.ElevatorHeight.TOP.getHeight() : Elevator.ElevatorHeight.BOTTOM.getHeight());
-        getPIDController().setAbsoluteTolerance(75);
+        getPIDController().setSetpoint(up ? ElevatorHeight.MIDDLE.getHeight() : Elevator.ElevatorHeight.BOTTOM.getHeight());
+        getPIDController().setAbsoluteTolerance(150);
     }
 
     public ElevatorCommand(ElevatorHeight height) {
@@ -25,8 +25,7 @@ public final class ElevatorCommand extends PIDCommand {
         requires(Elevator.getInstance());
 
         getPIDController().setSetpoint(height.getHeight());
-        getPIDController().setAbsoluteTolerance(50);
-
+        getPIDController().setAbsoluteTolerance(75);
     }
 
     @Override
@@ -42,7 +41,7 @@ public final class ElevatorCommand extends PIDCommand {
 
     @Override
     protected void usePIDOutput(double output) {
-
+        Elevator.getInstance().setPower(output);
     }
 
     @Override
@@ -54,11 +53,13 @@ public final class ElevatorCommand extends PIDCommand {
     protected void end() {
         getPIDController().disable();
         Elevator.getInstance().setState(ElevatorState.BRAKING);
+        Elevator.getInstance().setPower(.14);
     }
 
     @Override
     protected void interrupted() {
         getPIDController().disable();
         Elevator.getInstance().setState(ElevatorState.BRAKING);
+        Elevator.getInstance().setPower(.14);
     }
 }

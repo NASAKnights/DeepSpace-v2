@@ -6,17 +6,30 @@ import edu.wpi.first.wpilibj.command.Scheduler;
 import xyz.nasaknights.deepspace.commands.drive.DriveCommand;
 import xyz.nasaknights.deepspace.subsystems.Drivetrain;
 import xyz.nasaknights.deepspace.subsystems.Elevator;
+import xyz.nasaknights.deepspace.subsystems.Hatch;
+import xyz.nasaknights.deepspace.util.camera.CameraUtil;
 
 public class Robot extends TimedRobot {
     private static GameState currentState;
     private Compressor compressor;
+    private OI oi = new OI();
 
     @Override
     public void robotInit() {
         compressor = new Compressor(0);
-        compressor.start();
+        compressor.setClosedLoopControl(true);
 
         currentState = GameState.DISABLED;
+
+//        VisionClient.getInstance().start();
+
+        System.out.println("GOT HERE");
+
+        oi.prepareInputs();
+
+        CameraUtil.prepareCamera();
+
+//        VisionClient.getInstance().setLightOn(true);
     }
 
     @Override
@@ -32,6 +45,8 @@ public class Robot extends TimedRobot {
     public void autonomousInit() {
         Elevator.getInstance().setState(Elevator.ElevatorState.BRAKING);
 
+        new DriveCommand().start();
+
         currentState = GameState.AUTONOMOUS;
     }
 
@@ -46,6 +61,8 @@ public class Robot extends TimedRobot {
         new DriveCommand().start();
 
         currentState = GameState.TELEOP;
+
+        Hatch.getInstance().setExtended(true);
     }
 
     @Override
@@ -55,12 +72,19 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         Scheduler.getInstance().run();
+        oi.processAxis();
+
+        Hatch.getInstance().processPulses();
     }
 
     @Override
     public void testInit() {
         currentState = GameState.TEST;
-        compressor.start();
+    }
+
+    @Override
+    public void testPeriodic() {
+        Scheduler.getInstance().run();
     }
 
     public enum GameState {

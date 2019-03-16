@@ -1,12 +1,16 @@
 plugins {
     id "java"
-    id "edu.wpi.first.GradleRIO" version "2019.2.1"
+    id "edu.wpi.first.GradleRIO" version "2019.3.2"
 }
 
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
-
 def ROBOT_MAIN_CLASS = "xyz.nasaknights.deepspace.Main"
+
+repositories {
+    mavenCentral()
+
+    maven { url "http://www.revrobotics.com/content/sw/max/sdk/maven/" }
+    maven { url "http://devsite.ctr-electronics.com/maven/release/" }
+}
 
 // Define my targets (RoboRIO) and artifacts (deployable files)
 // This is added by GradleRIO's backing project EmbeddedTools.
@@ -17,7 +21,7 @@ deploy {
             // or from command line. If not found an exception will be thrown.
             // You can use getTeamOrDefault(team) instead of getTeamNumber if you
             // want to store a team number in this file.
-            team = frc.getTeamNumber()
+            team = 122
         }
     }
     artifacts {
@@ -35,17 +39,6 @@ deploy {
             directory = '/home/lvuser/deploy'
         }
     }
-}
-
-// Set this to true to enable desktop support.
-def includeDesktopSupport = false
-
-// Maven central needed for JUnit
-repositories {
-    mavenCentral()
-
-    maven { url "http://www.revrobotics.com/content/sw/max/sdk/maven/" }
-    maven { url "http://devsite.ctr-electronics.com/maven/release/" }
 }
 
 // Defining my dependencies. In this case, WPILib (+ friends), and vendor libraries.
@@ -67,4 +60,8 @@ dependencies {
 jar {
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     manifest edu.wpi.first.gradlerio.GradleRIOPlugin.javaManifest(ROBOT_MAIN_CLASS)
+}
+
+wrapper {
+    gradleVersion = '5.0'
 }

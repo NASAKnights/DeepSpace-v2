@@ -2,11 +2,7 @@ package xyz.nasaknights.deepspace.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.command.Subsystem;
-import xyz.nasaknights.deepspace.commands.drive.GearShiftCommand;
-import xyz.nasaknights.deepspace.control.ControllerMappings;
-import xyz.nasaknights.deepspace.control.JoystickFactory;
 import xyz.nasaknights.deepspace.util.motors.Lazy_TalonSRX;
 import xyz.nasaknights.deepspace.util.motors.Lazy_VictorSPX;
 import xyz.nasaknights.deepspace.util.motors.factory.TalonSRXFactory;
@@ -15,9 +11,14 @@ import xyz.nasaknights.deepspace.util.motors.factory.VictorSPXFactory;
 import static xyz.nasaknights.deepspace.RobotMap.*;
 
 public class Drivetrain extends Subsystem {
-    private static final double kHighGearRampSeconds = 1.5;
-    private static final double kLowGearRampSeconds = .65;
-    private static final double kElevatorMaxSpeed = .3;
+    public static final double kLowGearRampSeconds = 1.5; // just adjust this for high and the below for low?
+    public static final double kHighGearRampSeconds = .45;
+    public static final double kMiddleWheelMaxSpeed = .7;
+    public static final double kMiddleWheelRampSeconds = 1;
+    public static final double kElevatorMaxSpeed = .3;
+
+    private static DoubleSolenoid gearShifter;
+
     private static final TalonSRXFactory.MotorConfiguration kDrivetrainTalonSRXMotorConfiguration = new TalonSRXFactory.MotorConfiguration() {{
         kP = 0;
         kI = 0;
@@ -32,7 +33,8 @@ public class Drivetrain extends Subsystem {
 
         inverted = true;
     }};
-    private static Drivetrain instance = null;
+    private static Drivetrain instance = new Drivetrain();
+
     private final DoubleSolenoid.Value kHighGear = DoubleSolenoid.Value.kForward;
     private final DoubleSolenoid.Value kLowGear = DoubleSolenoid.Value.kReverse;
 
@@ -43,7 +45,6 @@ public class Drivetrain extends Subsystem {
     private Lazy_VictorSPX rearLeftVictor;
     private Lazy_VictorSPX rearRightVictor;
 
-    private DoubleSolenoid gearShifter;
     private boolean isInHighGear;
 
     private DrivetrainState state = DrivetrainState.TELEOP;
@@ -56,18 +57,21 @@ public class Drivetrain extends Subsystem {
         this.rearLeftVictor = VictorSPXFactory.createSlaveVictor(kRearLeftVictorID, VictorSPXFactory.kInvertedVictorSlaveConfiguration, this.frontLeftTalon);
         this.rearRightVictor = VictorSPXFactory.createSlaveVictor(kRearRightVictorID, VictorSPXFactory.kVictorSlaveConfiguration, this.frontRightTalon);
 
-        this.gearShifter = new DoubleSolenoid(0, 1);
+        this.middleTalon.configOpenloopRamp(kMiddleWheelRampSeconds);
+        this.middleTalon.configPeakOutputForward(kMiddleWheelMaxSpeed);
+        this.middleTalon.configPeakOutputReverse(kMiddleWheelMaxSpeed * -1);
+
+        gearShifter = new DoubleSolenoid(0, 0, 1);
 
         setHighGear(true);
-
-        new JoystickButton(JoystickFactory.getJoystick(JoystickFactory.Controllers.DRIVER), ControllerMappings.PS4Controller.X.getID()).whenPressed(new GearShiftCommand());
     }
 
+    /**
+     * Fetches the singleton instance of the Drivetrain class.
+     *
+     * @return Instance of drivetrain class
+     */
     public final static Drivetrain getInstance() {
-        if (instance == null) {
-            instance = new Drivetrain();
-        }
-
         return instance;
     }
 
@@ -76,8 +80,10 @@ public class Drivetrain extends Subsystem {
 
     }
 
-    public void drive(double throttle, double lateral, double rotation) {
-        if (Elevator.getInstance().getEncoderHeight() >= Elevator.ElevatorHeight.MIDDLE.getHeight()) {
+    public void drive(double throttle, double lateral, double rotate) {
+        double rotation = rotate * .75;
+
+        if (Elevator.getInstance().getEncoderHeight() <= Elevator.ElevatorHeight.MIDDLE.getHeight()) {
             frontLeftTalon.configPeakOutputForward(kElevatorMaxSpeed);
             frontRightTalon.configPeakOutputForward(kElevatorMaxSpeed);
             frontLeftTalon.configPeakOutputReverse(kElevatorMaxSpeed * -1);
@@ -129,13 +135,10 @@ public class Drivetrain extends Subsystem {
     }
 
     public void setHighGear(boolean highGear) {
-        if (this.isInHighGear != highGear) {
-            isInHighGear = highGear;
-            gearShifter.set(highGear ? kHighGear : kLowGear);
+        isInHighGear = highGear;
+        gearShifter.set(!highGear ? kHighGear : kLowGear);
 
-            frontLeftTalon.configOpenloopRamp(highGear ? kHighGearRampSeconds : kLowGearRampSeconds);
-            frontRightTalon.configOpenloopRamp(highGear ? kHighGearRampSeconds : kLowGearRampSeconds);
-        }
+        setRamp(highGear ? kLowGearRampSeconds : kHighGearRampSeconds);
     }
 
     public void toggleHighGear() {
@@ -146,6 +149,28 @@ public class Drivetrain extends Subsystem {
         frontLeftTalon.set(ControlMode.PercentOutput, 0);
         frontRightTalon.set(ControlMode.PercentOutput, 0);
         middleTalon.set(ControlMode.PercentOutput, 0);
+    }
+
+    public void setRamp(double ramp) {
+        frontLeftTalon.configOpenloopRamp(ramp);
+        frontRightTalon.configOpenloopRamp(ramp);
+    }
+
+    public void setLeftPower(double power) {
+        frontLeftTalon.set(ControlMode.PercentOutput, power);
+    }
+
+    public void setRightPower(double power) {
+        frontRightTalon.set(ControlMode.PercentOutput, power);
+    }
+
+    public void setMiddlePower(double power) {
+        middleTalon.set(ControlMode.PercentOutput, power);
+    }
+
+    public void setPower(double power) {
+        frontLeftTalon.set(ControlMode.PercentOutput, power);
+        frontRightTalon.set(ControlMode.PercentOutput, power);
     }
 
     public enum DrivetrainState {

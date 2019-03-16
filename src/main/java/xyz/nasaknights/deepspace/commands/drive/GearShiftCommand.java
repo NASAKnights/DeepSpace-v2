@@ -4,30 +4,23 @@ import edu.wpi.first.wpilibj.command.Command;
 import xyz.nasaknights.deepspace.subsystems.Drivetrain;
 
 public class GearShiftCommand extends Command {
-    private boolean done = false;
-
-    public GearShiftCommand() {
-        requires(Drivetrain.getInstance());
-    }
-
     @Override
     protected void initialize() {
-        Drivetrain.getInstance().toggleHighGear();
-        done = true;
+        Drivetrain.getInstance().setHighGear(true);
     }
 
     @Override
     protected boolean isFinished() {
-        return done;
+        return false;
     }
 
     @Override
     protected void end() {
-        new DriveCommand().start();
+        Drivetrain.getInstance().setHighGear(false);
     }
 
     @Override
     protected void interrupted() {
-        new DriveCommand().start();
+        Drivetrain.getInstance().setHighGear(false);
     }
 }

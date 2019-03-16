@@ -12,7 +12,7 @@ public class HatchCommand extends Command {
 
     @Override
     protected void execute() {
-        Hatch.getInstance().setPower(up ? .6 : -.6);
+        Hatch.getInstance().setPower(up ? -1 : 1);
     }
 
     @Override

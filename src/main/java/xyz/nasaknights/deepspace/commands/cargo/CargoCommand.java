@@ -5,6 +5,7 @@ import xyz.nasaknights.deepspace.subsystems.Cargo;
 
 public class CargoCommand extends Command {
     private static boolean inCage = false;
+    private static long lastChecked = -1;
     private double power;
 
     public CargoCommand(double power) {
@@ -13,19 +14,20 @@ public class CargoCommand extends Command {
 
     @Override
     protected void execute() {
-        if (Cargo.getInstance().isLimitActive() && power < 0) {
-            Cargo.getInstance().setPower(0);
-            inCage = true;
-            return;
-        }
-
-        if (inCage && power < 0) {
-            Cargo.getInstance().setPower(0);
+        if ((inCage || Cargo.getInstance().isLimitActive()) && power < 0) {
+            if (lastChecked != -1 && System.currentTimeMillis() - lastChecked > 500) {
+                Cargo.getInstance().setPower(0);
+                inCage = true;
+            } else if (lastChecked == -1) {
+                lastChecked = System.currentTimeMillis();
+                Cargo.getInstance().setPower(0);
+            }
             return;
         }
 
         if (inCage && power > 0) {
             inCage = false;
+            lastChecked = -1;
         }
 
         Cargo.getInstance().setPower(power);

@@ -19,6 +19,9 @@ public class RobotMap {
 
     public static final short kHatchVictorID = 5;
 
+    public static final String kVisionServerIP = "10.1.22.212";
+    public static final short kVisionServerPort = 6969;
+
     // TODO Verify IDs below here unless otherwise noted
 
     public static final short kLeftCAMSparkMAXID = 0;

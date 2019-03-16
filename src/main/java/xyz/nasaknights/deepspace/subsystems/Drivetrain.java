@@ -11,10 +11,10 @@ import xyz.nasaknights.deepspace.util.motors.factory.VictorSPXFactory;
 import static xyz.nasaknights.deepspace.RobotMap.*;
 
 public class Drivetrain extends Subsystem {
-    public static final double kLowGearRampSeconds = 1;
-    public static final double kHighGearRampSeconds = 1.7;
+    public static final double kLowGearRampSeconds = 1.5; // just adjust this for high and the below for low?
+    public static final double kHighGearRampSeconds = .45;
     public static final double kMiddleWheelMaxSpeed = .7;
-    public static final double kMiddleWheelRampSeconds = .5;
+    public static final double kMiddleWheelRampSeconds = 1;
     public static final double kElevatorMaxSpeed = .3;
 
     private static DoubleSolenoid gearShifter;
@@ -66,6 +66,11 @@ public class Drivetrain extends Subsystem {
         setHighGear(true);
     }
 
+    /**
+     * Fetches the singleton instance of the Drivetrain class.
+     *
+     * @return Instance of drivetrain class
+     */
     public final static Drivetrain getInstance() {
         return instance;
     }
@@ -75,7 +80,9 @@ public class Drivetrain extends Subsystem {
 
     }
 
-    public void drive(double throttle, double lateral, double rotation) {
+    public void drive(double throttle, double lateral, double rotate) {
+        double rotation = rotate * .75;
+
         if (Elevator.getInstance().getEncoderHeight() <= Elevator.ElevatorHeight.MIDDLE.getHeight()) {
             frontLeftTalon.configPeakOutputForward(kElevatorMaxSpeed);
             frontRightTalon.configPeakOutputForward(kElevatorMaxSpeed);
@@ -129,7 +136,7 @@ public class Drivetrain extends Subsystem {
 
     public void setHighGear(boolean highGear) {
         isInHighGear = highGear;
-        gearShifter.set(highGear ? kHighGear : kLowGear);
+        gearShifter.set(!highGear ? kHighGear : kLowGear);
 
         setRamp(highGear ? kLowGearRampSeconds : kHighGearRampSeconds);
     }
@@ -147,6 +154,23 @@ public class Drivetrain extends Subsystem {
     public void setRamp(double ramp) {
         frontLeftTalon.configOpenloopRamp(ramp);
         frontRightTalon.configOpenloopRamp(ramp);
+    }
+
+    public void setLeftPower(double power) {
+        frontLeftTalon.set(ControlMode.PercentOutput, power);
+    }
+
+    public void setRightPower(double power) {
+        frontRightTalon.set(ControlMode.PercentOutput, power);
+    }
+
+    public void setMiddlePower(double power) {
+        middleTalon.set(ControlMode.PercentOutput, power);
+    }
+
+    public void setPower(double power) {
+        frontLeftTalon.set(ControlMode.PercentOutput, power);
+        frontRightTalon.set(ControlMode.PercentOutput, power);
     }
 
     public enum DrivetrainState {

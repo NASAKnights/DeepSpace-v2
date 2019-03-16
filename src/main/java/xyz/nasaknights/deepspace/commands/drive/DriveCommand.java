@@ -12,7 +12,9 @@ public class DriveCommand extends Command {
 
     @Override
     protected void execute() {
-        Drivetrain.getInstance().drive(JoystickFactory.getJoystick(JoystickFactory.Controllers.DRIVER).getRawAxis(ControllerMappings.PS4Controller.LEFT_Y_AXIS.getID()),
+        double leftY = JoystickFactory.getJoystick(JoystickFactory.Controllers.DRIVER).getRawAxis(ControllerMappings.PS4Controller.LEFT_Y_AXIS.getID());
+
+        Drivetrain.getInstance().drive(leftY * Math.abs(leftY),
                 JoystickFactory.getJoystick(JoystickFactory.Controllers.DRIVER).getRawAxis(ControllerMappings.PS4Controller.LEFT_X_AXIS.getID()),
                 JoystickFactory.getJoystick(JoystickFactory.Controllers.DRIVER).getRawAxis(ControllerMappings.PS4Controller.RIGHT_X_AXIS.getID()));
     }

@@ -7,11 +7,13 @@ import xyz.nasaknights.deepspace.commands.cargo.AngledCargoCommand;
 import xyz.nasaknights.deepspace.commands.cargo.CargoCommand;
 import xyz.nasaknights.deepspace.commands.drive.GearShiftCommand;
 import xyz.nasaknights.deepspace.commands.elevator.ElevatorCommand;
+import xyz.nasaknights.deepspace.commands.elevator.ElevatorStopCommand;
 import xyz.nasaknights.deepspace.commands.hatch.HatchAngleCommand;
 import xyz.nasaknights.deepspace.commands.hatch.HatchExtensionCommand;
 import xyz.nasaknights.deepspace.control.ControllerMappings;
 import xyz.nasaknights.deepspace.control.JoystickFactory;
 import xyz.nasaknights.deepspace.subsystems.Drivetrain;
+import xyz.nasaknights.deepspace.subsystems.Elevator;
 
 public class OI {
     private AngledCargoCommand cargo = new AngledCargoCommand(0, 0);
@@ -25,8 +27,11 @@ public class OI {
 
 //        new JoystickButton(JoystickFactory.getJoystick(JoystickFactory.Controllers.DRIVER), ControllerMappings.PS4Controller.SHARE.getID()).whileHeld(new DriveAssistCommand());
 
-        new JoystickButton(JoystickFactory.getJoystick(JoystickFactory.Controllers.OPERATOR), ControllerMappings.PS4Controller.TRIANGLE.getID()).whileHeld(new ElevatorCommand(true));
-        new JoystickButton(JoystickFactory.getJoystick(JoystickFactory.Controllers.OPERATOR), ControllerMappings.PS4Controller.CIRCLE.getID()).whileHeld(new ElevatorCommand(false));
+        new JoystickButton(JoystickFactory.getJoystick(JoystickFactory.Controllers.OPERATOR), ControllerMappings.PS4Controller.CIRCLE.getID()).whenPressed(new ElevatorCommand(Elevator.ElevatorHeight.BOTTOM));
+        new JoystickButton(JoystickFactory.getJoystick(JoystickFactory.Controllers.OPERATOR), ControllerMappings.PS4Controller.CIRCLE.getID()).whenReleased(new ElevatorStopCommand());
+
+        new JoystickButton(JoystickFactory.getJoystick(JoystickFactory.Controllers.OPERATOR), ControllerMappings.PS4Controller.TRIANGLE.getID()).whenPressed(new ElevatorCommand(Elevator.ElevatorHeight.TOP));
+        new JoystickButton(JoystickFactory.getJoystick(JoystickFactory.Controllers.OPERATOR), ControllerMappings.PS4Controller.TRIANGLE.getID()).whenReleased(new ElevatorStopCommand());
 
         new JoystickButton(JoystickFactory.getJoystick(JoystickFactory.Controllers.OPERATOR), ControllerMappings.PS4Controller.LEFT_BUMPER.getID()).whileHeld(new CargoCommand(-.9));
         new JoystickButton(JoystickFactory.getJoystick(JoystickFactory.Controllers.OPERATOR), ControllerMappings.PS4Controller.RIGHT_BUMPER.getID()).whileHeld(new CargoCommand(1));
@@ -66,11 +71,7 @@ public class OI {
             Drivetrain.getInstance().setRamp(Drivetrain.getInstance().isInHighGear() ? Drivetrain.kHighGearRampSeconds : Drivetrain.kLowGearRampSeconds);
         }
 
-        System.out.println(JoystickFactory.getJoystick(JoystickFactory.Controllers.OPERATOR).getPOV());
-
         int pov = JoystickFactory.getJoystick(JoystickFactory.Controllers.OPERATOR).getPOV();
-
-        System.out.println(pov);
 
         if ((pov == 0 || pov == 180) && (System.currentTimeMillis() - timeLastAngleSet) >= 300) {
             angle.setAngle(pov == 0 ? HatchAngleCommand.HatchAngles.getNext(angle.getAngle()) : HatchAngleCommand.HatchAngles.getPrevious(angle.getAngle()));

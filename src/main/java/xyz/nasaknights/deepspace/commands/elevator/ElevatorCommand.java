@@ -7,11 +7,12 @@ import xyz.nasaknights.deepspace.subsystems.Elevator.ElevatorState;
 
 public final class ElevatorCommand extends PIDCommand {
     private static final double kP = -.00013;
-    private static final double kI = 0.000000005;
-    private static final double kD = -.000067;
+    private static final double kI = 0; //0.000000005;
+    private static final double kD = -.0002;
+    private static final double kF = 0; //.00001;
 
     public ElevatorCommand(boolean up) {
-        super(kP, kI, kD);
+        super(kP, kI, kD, kF);
 
         requires(Elevator.getInstance());
 
@@ -20,7 +21,7 @@ public final class ElevatorCommand extends PIDCommand {
     }
 
     public ElevatorCommand(ElevatorHeight height) {
-        super(kP, kI, kD);
+        super(kP, kI, kD, kF);
 
         requires(Elevator.getInstance());
 

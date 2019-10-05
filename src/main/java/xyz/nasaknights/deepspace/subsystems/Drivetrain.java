@@ -11,10 +11,10 @@ import xyz.nasaknights.deepspace.util.motors.factory.VictorSPXFactory;
 import static xyz.nasaknights.deepspace.RobotMap.*;
 
 public class Drivetrain extends Subsystem {
-    public static final double kLowGearRampSeconds = 1.5; // just adjust this for high and the below for low?
-    public static final double kHighGearRampSeconds = .45;
-    public static final double kMiddleWheelMaxSpeed = .7;
-    public static final double kMiddleWheelRampSeconds = 1;
+    public static final double kLowGearRampSeconds = 1.39; // just adjust this for high and the below for low?
+    public static final double kHighGearRampSeconds = .40;
+    public static final double kMiddleWheelMaxSpeed = 1;
+    public static final double kMiddleWheelRampSeconds = .5;
     public static final double kElevatorMaxSpeed = .3;
 
     private static DoubleSolenoid gearShifter;
@@ -25,6 +25,7 @@ public class Drivetrain extends Subsystem {
         kD = 0;
         kF = 0;
     }};
+
     private static final TalonSRXFactory.MotorConfiguration kDrivetrainInvertedTalonSRXMotorConfiguration = new TalonSRXFactory.MotorConfiguration() {{
         kP = 0;
         kI = 0;
@@ -33,14 +34,13 @@ public class Drivetrain extends Subsystem {
 
         inverted = true;
     }};
+
     private static Drivetrain instance = new Drivetrain();
 
     private final DoubleSolenoid.Value kHighGear = DoubleSolenoid.Value.kForward;
     private final DoubleSolenoid.Value kLowGear = DoubleSolenoid.Value.kReverse;
 
-    private Lazy_TalonSRX frontLeftTalon;
-    private Lazy_TalonSRX frontRightTalon;
-    private Lazy_TalonSRX middleTalon;
+    private Lazy_TalonSRX frontLeftTalon, frontRightTalon, middleTalon;
 
     private Lazy_VictorSPX rearLeftVictor;
     private Lazy_VictorSPX rearRightVictor;
@@ -96,6 +96,7 @@ public class Drivetrain extends Subsystem {
         }
 
         if (throttle >= .07 || throttle <= -.07) {
+            setRamp(isInHighGear() ? kHighGearRampSeconds : kLowGearRampSeconds);
             if (rotation >= .07 || rotation <= -.07) {
                 frontLeftTalon.set(ControlMode.PercentOutput, throttle * -1 + rotation);
                 frontRightTalon.set(ControlMode.PercentOutput, throttle * -1 - rotation);
@@ -105,9 +106,11 @@ public class Drivetrain extends Subsystem {
             }
         } else {
             if (rotation >= .07 || rotation <= -.07) {
+                setRamp(.3);
                 frontLeftTalon.set(ControlMode.PercentOutput, rotation);
                 frontRightTalon.set(ControlMode.PercentOutput, -rotation);
             } else {
+                setRamp(isInHighGear() ? kHighGearRampSeconds : kLowGearRampSeconds);
                 frontLeftTalon.set(ControlMode.PercentOutput, 0);
                 frontRightTalon.set(ControlMode.PercentOutput, 0);
             }

@@ -78,6 +78,7 @@ public class DriveAssistCommand extends Command {
         @Override
         public void pidWrite(double output) {
             Drivetrain.getInstance().setLeftPower(output);
+            Drivetrain.getInstance().setRightPower(-output);
         }
     });
 

@@ -17,7 +17,7 @@ public class RobotMap {
     public static final short kLeftIntakeVictorID = 4;
     public static final short kRightIntakeVictorID = 3;
 
-    public static final short kHatchVictorID = 5;
+    public static final short kHatchTalonID = 4;
 
     public static final String kVisionServerIP = "10.1.22.212";
     public static final short kVisionServerPort = 6969;

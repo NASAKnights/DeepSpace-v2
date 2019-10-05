@@ -1,7 +1,7 @@
 package xyz.nasaknights.deepspace.util.camera;
 
 import edu.wpi.cscore.UsbCamera;
-import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.wpilibj.CameraServer;
 
 public class CameraUtil {
     private static final UsbCamera camera = CameraServer.getInstance().startAutomaticCapture(0);

@@ -7,7 +7,7 @@ import xyz.nasaknights.deepspace.commands.cargo.AngledCargoCommand;
 import xyz.nasaknights.deepspace.commands.cargo.CargoCommand;
 import xyz.nasaknights.deepspace.commands.drive.GearShiftCommand;
 import xyz.nasaknights.deepspace.commands.elevator.ElevatorCommand;
-import xyz.nasaknights.deepspace.commands.hatch.HatchCommand;
+import xyz.nasaknights.deepspace.commands.hatch.HatchAngleCommand;
 import xyz.nasaknights.deepspace.commands.hatch.HatchExtensionCommand;
 import xyz.nasaknights.deepspace.control.ControllerMappings;
 import xyz.nasaknights.deepspace.control.JoystickFactory;
@@ -15,6 +15,8 @@ import xyz.nasaknights.deepspace.subsystems.Drivetrain;
 
 public class OI {
     private AngledCargoCommand cargo = new AngledCargoCommand(0, 0);
+    private static long timeLastAngleSet = System.currentTimeMillis();
+    private HatchAngleCommand angle = new HatchAngleCommand(HatchAngleCommand.HatchAngles.CARGO_IN);
 
     public void prepareInputs() {
         new JoystickButton(JoystickFactory.getJoystick(JoystickFactory.Controllers.DRIVER), ControllerMappings.PS4Controller.RIGHT_BUMPER.getID()).whileHeld(new GearShiftCommand());
@@ -33,8 +35,8 @@ public class OI {
 
         new JoystickButton(JoystickFactory.getJoystick(JoystickFactory.Controllers.OPERATOR), ControllerMappings.PS4Controller.SHARE.getID()).whenPressed(new CAMExtensionCommand());
 
-        new JoystickButton(JoystickFactory.getJoystick(JoystickFactory.Controllers.OPERATOR), ControllerMappings.PS4Controller.X.getID()).whileHeld(new HatchCommand(false));
-        new JoystickButton(JoystickFactory.getJoystick(JoystickFactory.Controllers.OPERATOR), ControllerMappings.PS4Controller.SQUARE.getID()).whileHeld(new HatchCommand(true));
+        new JoystickButton(JoystickFactory.getJoystick(JoystickFactory.Controllers.OPERATOR), ControllerMappings.PS4Controller.X.getID()).whileHeld(new HatchAngleCommand(HatchAngleCommand.HatchAngles.HATCH));
+        new JoystickButton(JoystickFactory.getJoystick(JoystickFactory.Controllers.OPERATOR), ControllerMappings.PS4Controller.SQUARE.getID()).whileHeld(new HatchAngleCommand(HatchAngleCommand.HatchAngles.TOP));
     }
 
     public void processAxis() {
@@ -62,6 +64,18 @@ public class OI {
             Drivetrain.getInstance().setRamp(.45);
         } else {
             Drivetrain.getInstance().setRamp(Drivetrain.getInstance().isInHighGear() ? Drivetrain.kHighGearRampSeconds : Drivetrain.kLowGearRampSeconds);
+        }
+
+        System.out.println(JoystickFactory.getJoystick(JoystickFactory.Controllers.OPERATOR).getPOV());
+
+        int pov = JoystickFactory.getJoystick(JoystickFactory.Controllers.OPERATOR).getPOV();
+
+        System.out.println(pov);
+
+        if ((pov == 0 || pov == 180) && (System.currentTimeMillis() - timeLastAngleSet) >= 300) {
+            angle.setAngle(pov == 0 ? HatchAngleCommand.HatchAngles.getNext(angle.getAngle()) : HatchAngleCommand.HatchAngles.getPrevious(angle.getAngle()));
+            angle.start();
+            timeLastAngleSet = System.currentTimeMillis();
         }
     }
 }

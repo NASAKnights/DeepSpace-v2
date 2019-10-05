@@ -66,13 +66,17 @@ public class Elevator extends Subsystem {
         this.victor.set(ControlMode.PercentOutput, power);
     }
 
+    public double getVoltage() {
+        return talon.getMotorOutputVoltage();
+    }
+
     public enum ElevatorState {
         MOVING,
-        BRAKING;
+        BRAKING
     }
 
     public enum ElevatorHeight {
-        BOTTOM(-1000),
+        BOTTOM(-500),
         SHIP_HATCH(0),
         SHIP_CARGO(0),
         ROCKET_FIRST_HATCH(0),
@@ -82,7 +86,7 @@ public class Elevator extends Subsystem {
         ROCKET_THIRD_HATCH(0),
         ROCKET_THIRD_CARGO(0),
         MIDDLE(-17625),
-        TOP(-34500);
+        TOP(-33000);
 
         private int height;
 

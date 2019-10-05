@@ -29,4 +29,33 @@ public class ControllerMappings {
             return this.id;
         }
     }
+
+    public enum LogitechController {
+        A(2),
+        X(1),
+        Y(4),
+        B(3),
+        LEFT_BUMPER(5),
+        RIGHT_BUMPER(6),
+        LEFT_TRIGGER(7),
+        RIGHT_TRIGGER(8),
+        BACK(9),
+        START(10),
+        LEFT_JOYSTICK(11),
+        RIGHT_JOYSTICK(12),
+        LEFT_X(0),
+        LEFT_Y(1),
+        RIGHT_X(2),
+        RIGHT_Y(3);
+
+        private int id;
+
+        LogitechController(int id) {
+            this.id = id;
+        }
+
+        public int getID() {
+            return this.id;
+        }
+    }
 }

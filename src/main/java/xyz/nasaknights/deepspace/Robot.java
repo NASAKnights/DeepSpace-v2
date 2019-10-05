@@ -23,8 +23,6 @@ public class Robot extends TimedRobot {
 
 //        VisionClient.getInstance().start();
 
-        System.out.println("GOT HERE");
-
         oi.prepareInputs();
 
         CameraUtil.prepareCamera();
@@ -67,14 +65,13 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopPeriodic() {
+        System.out.println(Elevator.getInstance().getVoltage());
     }
 
     @Override
     public void robotPeriodic() {
         Scheduler.getInstance().run();
         oi.processAxis();
-
-        Hatch.getInstance().processPulses();
     }
 
     @Override
@@ -91,6 +88,6 @@ public class Robot extends TimedRobot {
         TELEOP,
         AUTONOMOUS,
         TEST,
-        DISABLED;
+        DISABLED
     }
 }

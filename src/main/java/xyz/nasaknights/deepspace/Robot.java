@@ -41,6 +41,8 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
+        Elevator.getInstance().setState(Elevator.ElevatorState.BRAKING);
+
         new DriveCommand().start();
 
         currentState = GameState.AUTONOMOUS;
@@ -63,8 +65,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopPeriodic() {
-        System.out.println(Elevator.getInstance().getVelocity());
-        Elevator.getInstance().setPower(.5);
+        System.out.println(Elevator.getInstance().getVoltage());
     }
 
     @Override
